@@ -1,5 +1,5 @@
 from bokeh.plotting import figure, show
-from bokeh.models import LinearAxis, DataRange1d, ColumnDataSource, HoverTool, LogAxis
+from bokeh.models import LinearAxis, Range1d, HoverTool, LogAxis, WheelZoomTool, ColumnDataSource
 import os
 import pandas as pd
 directory = "assignment1_data"
@@ -23,24 +23,39 @@ merged_df = pd.merge(crashes, ratings, on='Date', how='inner')
 merged_df['Date'] = pd.to_datetime(merged_df['Date'])
 merged_df['Crashes'] = merged_df['Daily Crashes'] + merged_df['Daily ANRs']
 merged_df.drop(['Daily Crashes', 'Daily ANRs'], axis=1, inplace=True)
+crashes = merged_df['Crashes'].tolist()
+rating = merged_df['Daily Average Rating'].tolist()
+dates = merged_df['Date'].tolist()
 
-source = ColumnDataSource(merged_df)
-p = figure(x_axis_type='datetime', x_axis_label='Date', y_axis_label='Daily Average Rating', width=800, height=500)
-rating = p.scatter(x='Date', y='Daily Average Rating', source=source, color='blue')
-crashes = p.scatter(x='Date', y='Crashes', source=source, color='red')
-second_y_range = DataRange1d(start=0, end=85)
-tooltips_rating = [
-    ("Date", "@Date{%F}"),
-    ("Daily Average Rating", "@{Daily Average Rating}{1.1}")
-]
+p = figure(width=900, height=600, x_axis_type="datetime", x_axis_label='Date', tools="pan,save,reset", title='Ratings vs Stability')
+p.background_fill_color = "#fafafa"
+
+crashes_renderer = p.scatter(dates, crashes, color='#de2d26', size=7)
+p.yaxis.axis_label = "Crashes"
+p.yaxis.axis_label_text_color = "#de2d26"
+
+p.extra_y_ranges['foo'] = Range1d(-0.1, 5.2)
+rating_renderer = p.scatter(dates, rating, color='blue', size=6, y_range_name="foo")
+
+ax2 = LinearAxis(axis_label="Rating", y_range_name="foo", axis_label_text_color='blue')
+p.add_layout(ax2, 'right')
+
+wheel_zoom = WheelZoomTool()
+p.add_tools(wheel_zoom)
+p.toolbar.active_scroll = wheel_zoom
 
 tooltips_crashes = [
-    ("Date", "@Date{%F}"),
-    ("Crashes", "@Crashes")
+    ("Date", "@x{%F}"),
+    ("Crashes", "@y")
 ]
-hover_rating = HoverTool(renderers=[rating], tooltips=tooltips_rating, formatters={'@Date': 'datetime'})
-hover_crashes = HoverTool(renderers=[crashes], tooltips=tooltips_crashes, formatters={'@Date': 'datetime'})
-p.add_tools(hover_rating, hover_crashes)
-p.extra_y_ranges = {"second_y_axis": second_y_range}
-p.add_layout(LogAxis(y_range_name="second_y_axis", axis_label="Crashes"), 'right')
+
+tooltips_rating = [
+    ("Date", "@x{%F}"),
+    ("Daily Average Rating", "@y{0.0}")
+]
+
+hover_crashes = HoverTool(renderers=[crashes_renderer], tooltips=tooltips_crashes, formatters={'@x': 'datetime'})
+hover_rating = HoverTool(renderers=[rating_renderer], tooltips=tooltips_rating, formatters={'@x': 'datetime'})
+p.add_tools(hover_crashes, hover_rating)
+
 show(p)
