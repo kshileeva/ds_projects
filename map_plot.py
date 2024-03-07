@@ -1,5 +1,7 @@
-import os
 import pandas as pd
+import geopandas as gpd
+import os
+from bokeh.plotting import figure, show
 
 
 def assembling_data(directory="assignment1_data"):
@@ -30,10 +32,10 @@ def merging():
     columns_country = ['Country', 'Total Average Rating', 'Date']
     dropped_sales = dropping_columns(merged_sales, columns_sales)
     dropped_country = dropping_columns(merged_country, columns_country)
-    dropped_sales.rename(columns={'Transaction Date': 'Date'}, inplace=True)
-    dropped_sales['Date'] = pd.to_datetime(dropped_sales['Date'])
-    dropped_country['Date'] = pd.to_datetime(dropped_country['Date'])
-    df = pd.merge(dropped_sales, dropped_country, on='Date', how='inner')
-    return df
+    pd.to_datetime(dropped_sales['Transaction Date'])
+    pd.to_datetime(dropped_country['Date'])
+    return dropped_country, dropped_sales
 
-print(merging())
+
+c, s = merging()
+print(c)
