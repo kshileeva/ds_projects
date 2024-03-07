@@ -1,5 +1,5 @@
 from bokeh.plotting import figure, show
-from bokeh.models import LinearAxis, Range1d, HoverTool, LogAxis, WheelZoomTool, ColumnDataSource
+from bokeh.models import LinearAxis, Range1d, HoverTool, WheelZoomTool
 import os
 import pandas as pd
 directory = "assignment1_data"
