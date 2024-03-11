@@ -1,8 +1,9 @@
 import os
 import geopandas as gpd
 from bokeh.plotting import figure, output_file, show
-from bokeh.models import GeoJSONDataSource, HoverTool
+from bokeh.models import GeoJSONDataSource, HoverTool, Slider, CustomJS
 import pandas as pd
+import country_converter as coco
 
 
 def assembling_data(directory="assignment1_data", countries: list = [], sales: list = []):
@@ -47,19 +48,16 @@ def sales_sum(df):
 sale = sales_sum(sales)
 
 
-shapefile = 'ne_110m_admin_0_countries_lakes.shp'
-gdf = gpd.read_file(shapefile)[['ADMIN', 'ADM0_A3', 'geometry']]
-gdf.columns = ['country', 'country_code', 'geometry']
-
-ratings_data = {
-    'Country_Code': ['US', 'IT', 'GB', 'DE', 'FR'],
-    'Rating': [4.2, 3.5, 4.0, 4.8, 3.9]
-}
-ratings_df = pd.DataFrame(ratings_data)
-
-ratings_df.rename(columns={'Country_Code': 'country_code'}, inplace=True)
-
-gdf = gdf.merge(ratings_df, on='country_code', how='left')
+def geodata_country(shapefile='ne_110m_admin_0_countries_lakes/ne_110m_admin_0_countries_lakes.shp'):
+    gdf = gpd.read_file(shapefile)[['ADMIN', 'ADM0_A3', 'geometry']]
+    gdf.columns = ['country', 'country_code', 'geometry']
+    ratings_df = countries.rename(columns={'Country': 'country_code'})
+    iso2_values = ratings_df['country_code']
+    ratings_conv = coco.convert(names=iso2_values, to='ISO3', not_found=None)
+    ratings_df['country_code'] = ratings_conv
+    gdf = gdf.merge(ratings_df, on='country_code', how='left')
+    gdf = gdf[gdf['country_code'] != 'ATA']
+    return gdf
 
 
 def get_geodatasource(gdf):
@@ -69,16 +67,33 @@ def get_geodatasource(gdf):
 
 
 def plot_map(gdf, title=''):
-    p = figure(title=title, height=600, width=1000)
+    p = figure(title=title, height=500, width=950)
     geosource = get_geodatasource(gdf)
     p.patches('xs', 'ys', source=geosource, line_color='black', line_width=0.5, fill_alpha=1)
-
-    # Use the 'Rating' column directly from the GeoDataFrame
-    hover = HoverTool(tooltips=[("Country", "@country"), ("Rating", "@Rating")])
+    hover = HoverTool(
+        tooltips=[("Country", "@country"), ("Rating", "@{Total Average Rating}")],
+        formatters={'Date': 'datetime'})
     p.add_tools(hover)
+    slider = Slider(start=1, end=24, value=24, step=1, title="Week", width=110)
+    callback = CustomJS(args=dict(source=geosource), code="""
+        var data = source.data;
+        var week = cb_obj.value;
+        var indices = [];
+        for (var i = 0; i < data['week'].length; i++) {
+            if (data['week'][i] == week) {
+                indices.push(i);
+            }
+        }
+        source.selected.indices = indices;
+        source.change.emit();
+    """)
+
+    slider.js_on_change('value', callback)
+    from bokeh.layouts import column
+    layout = column(p, slider)
 
     output_file('world_map.html')
-    show(p)
+    show(layout)
 
 
-plot_map(gdf, title='World Map')
+plot_map(geodata_country(), title='World Map')
