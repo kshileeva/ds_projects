@@ -1,7 +1,7 @@
 import os
 import geopandas as gpd
 from bokeh.plotting import figure, output_file, show
-from bokeh.models import GeoJSONDataSource, HoverTool, Slider, CustomJS
+from bokeh.models import GeoJSONDataSource, HoverTool, Slider, CustomJS, Button, LinearColorMapper, ColorBar
 import pandas as pd
 import country_converter as coco
 
@@ -29,7 +29,7 @@ def dropping_columns(data, cols: list):
 def merging():
     merged_country, merged_sales = assembling_data()
     columns_sales = ['Transaction Date', 'Buyer Country', 'Amount (Merchant Currency)']
-    columns_country = ['Country', 'Total Average Rating', 'Date']
+    columns_country = ['Country', 'Total Average Rating', 'Date', 'Daily Average Rating']
     dropped_sales = dropping_columns(merged_sales, columns_sales)
     dropped_country = dropping_columns(merged_country, columns_country)
     pd.to_datetime(dropped_sales['Transaction Date'])
@@ -68,13 +68,22 @@ def get_geodatasource(gdf):
 
 def plot_map(gdf, title=''):
     p = figure(title=title, height=500, width=950)
-    geosource = get_geodatasource(gdf)
-    p.patches('xs', 'ys', source=geosource, line_color='black', line_width=0.5, fill_alpha=1)
     hover = HoverTool(
         tooltips=[("Country", "@country"), ("Rating", "@{Total Average Rating}")],
         formatters={'Date': 'datetime'})
     p.add_tools(hover)
+    reset_data_button = Button(label="Reset map", background='black', width=110)
     slider = Slider(start=1, end=24, value=24, step=1, title="Week", width=110)
+    palette = ['#008000', '#FFC500', '#ff0000', '#c70000']
+    color_mapper = LinearColorMapper(palette=palette, low=0, high=4, nan_color='#838383')
+    tick_labels = {'4': '>4'}
+    color_bar = ColorBar(color_mapper=color_mapper, label_standoff=6, width=500, height=20,
+                         border_line_color=None, location=(0, 0), major_label_overrides=tick_labels,
+                         title='Rating')
+    geosource = get_geodatasource(gdf)
+    p.patches('xs', 'ys', source=geosource, line_color='black', line_width=0.5, fill_alpha=1)
+    p.background_fill_color = "beige"
+    p.background_fill_alpha = 0.2
     callback = CustomJS(args=dict(source=geosource), code="""
         var data = source.data;
         var week = cb_obj.value;
@@ -96,4 +105,4 @@ def plot_map(gdf, title=''):
     show(layout)
 
 
-plot_map(geodata_country(), title='World Map')
+plot_map(geodata_country(), title='Weekly Average Rating per Country')
