@@ -5,17 +5,19 @@ import pandas as pd
 directory = "assignment1_data"
 dfs_rating = []
 dfs_crashes = []
+dsf_reviews = []
 for filename in os.listdir(directory):
     if filename.startswith("stats_ratings_") and filename.endswith("_overview.csv"):
         filepath = os.path.join(directory, filename)
         df = pd.read_csv(filepath, encoding='UTF-16')
         dfs_rating.append(df)
-    if filename.startswith("stats_crashes_") and filename.endswith("_overview.csv"):
+    elif filename.startswith("stats_crashes_") and filename.endswith("_overview.csv"):
         filepath = os.path.join(directory, filename)
         df = pd.read_csv(filepath, encoding='UTF-16')
         dfs_crashes.append(df)
+
 merged_rating = pd.concat(dfs_rating, ignore_index=True)
-merged_rating = merged_rating.fillna(0)
+merged_rating['Daily Average Rating'].fillna(merged_rating['Total Average Rating'], inplace=True)
 merged_crash = pd.concat(dfs_crashes, ignore_index=True)
 ratings = merged_rating.drop(['Package Name'], axis=1)
 crashes = merged_crash.drop(['Package Name'], axis=1)
@@ -27,7 +29,8 @@ crashes = merged_df['Crashes'].tolist()
 rating = merged_df['Daily Average Rating'].tolist()
 dates = merged_df['Date'].tolist()
 
-p = figure(width=900, height=600, x_axis_type="datetime", x_axis_label='Date', tools="pan,save,reset", title='Ratings vs Stability')
+p = figure(width=900, height=600, x_axis_type="datetime", x_axis_label='Date', tools="pan,save,reset",
+           title='Ratings vs Stability')
 p.background_fill_color = "#fafafa"
 
 crashes_renderer = p.scatter(dates, crashes, color='#de2d26', size=7)
@@ -57,5 +60,4 @@ tooltips_rating = [
 hover_crashes = HoverTool(renderers=[crashes_renderer], tooltips=tooltips_crashes, formatters={'@x': 'datetime'})
 hover_rating = HoverTool(renderers=[rating_renderer], tooltips=tooltips_rating, formatters={'@x': 'datetime'})
 p.add_tools(hover_crashes, hover_rating)
-
 show(p)

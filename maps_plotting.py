@@ -2,9 +2,11 @@ import os
 import geopandas as gpd
 from bokeh.layouts import row, column
 from bokeh.plotting import figure, output_file, show
-from bokeh.models import GeoJSONDataSource, HoverTool, Slider, CustomJS
+from bokeh.models import GeoJSONDataSource, HoverTool, Slider, LinearColorMapper, ColorBar
 import pandas as pd
 import country_converter as coco
+import panel as pn
+import panel.widgets as pnw
 
 
 def assembling_data(directory="assignment1_data") -> tuple:
@@ -92,14 +94,26 @@ def filter_weekly_data(df, selected_week):
     return filtered_df
 
 
+def get_weekly_data(selected_week, df):
+    filtered_df = df[df['Week'] == selected_week]
+    geojson_data = filtered_df.to_json()
+    geojson_data_source = GeoJSONDataSource(geojson=geojson_data)
+    return geojson_data_source
+
+
 def plot_map():
+    palette = ['#8B4513', '#c70000', '#ff0000', '#FFA500', '#FFFF00', '#008000']
+    ratings = [float('-inf'), 0, 1, 2, 3, 4, float('inf')]
+    rating_labels = ['NaN', '0-1', '1-2', '2-3', '3-4', '4-5']
     p1 = figure(title="Weekly Rating per Country", height=300, width=750)
     p2 = figure(title="Weekly Sales per Country", height=300, width=750)
     country_geo = geodata_country(code_country)
     sale_geo = geodata_country(code_sale)
     source_country = get_datasource(country_geo)
     source_sales = get_datasource(sale_geo)
-    p1.patches('xs', 'ys', source=source_country, line_color='black', line_width=0.5, fill_alpha=1)
+    color_mapper = LinearColorMapper(palette=palette, low=min(ratings), high=max(ratings), nan_color='#F5F5DC')
+    p1.patches('xs', 'ys', source=source_country, line_color='black', line_width=0.5,
+               fill_alpha=1, fill_color={'field': 'Daily Average Rating', 'transform': color_mapper})
     p2.patches('xs', 'ys', source=source_sales, line_color='black', line_width=0.5, fill_alpha=1)
     hover1 = HoverTool(
         tooltips=[("Country", "@country"), ("Rating", "@{Daily Average Rating}{0,0.00}")],
@@ -109,22 +123,29 @@ def plot_map():
         tooltips=[("Country", "@country"), ("Amount, EUR", "@{Amount (Merchant Currency)}{0,0.00}")],
         formatters={'Week': 'numeral'})
     p2.add_tools(hover2)
-    slider = Slider(start=22, end=52, value=22, step=1, title="Week", width=110)
+    color_bar = ColorBar(color_mapper=color_mapper, label_standoff=6, width=500, height=20,
+                         border_line_color=None, location=(0, 0),
+                         major_label_overrides=dict(zip(ratings, rating_labels)),
+                         title='Rating')
+    p1.add_layout(color_bar, 'below')
 
-    def update_source_data(attr, old, new):
-        selected_week = slider.value  # Assuming you have defined the slider widget
-        new_data_country = filter_weekly_data(code_country, selected_week)
-        new_data_sales = filter_weekly_data(code_sale, selected_week)
-        source_country.geojson = get_datasource(geodata_country(new_data_country)).geojson
-        source_sales.geojson = get_datasource(geodata_country(new_data_sales)).geojson
+    def update_map1(attr, old, new):
+        selected_week = slider.value
+        new_country_source = get_weekly_data(selected_week, source_country)
+        return new_country_source
 
-    slider.on_change('value', update_source_data)
+    def update_map2(attr, old, new):
+        selected_week = slider.value
+        new_sales_source = get_weekly_data(selected_week, source_sales)
+        return new_sales_source
 
+    slider = Slider(start=22, end=52, value=22, step=1, title="Week", width=200)
+    slider.on_change('value', update_map1)
+    slider.on_change('value', update_map2)
     layout = column(row(p1, p2), slider)
 
     output_file('world_map.html')
-    show(layout)
+    # show(layout)
+    return sale_geo, country_geo
 
-
-plot_map()
-
+print(plot_map())
