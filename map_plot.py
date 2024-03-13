@@ -2,6 +2,8 @@ import os
 import pandas as pd
 import plotly.express as px
 import country_converter as coco
+import plotly.graph_objects as go
+
 
 def assembling_data(directory="assignment1_data"):
     countries = []
@@ -39,8 +41,13 @@ countries, sales = drop()
 
 def sum_of_sales(df: pd.DataFrame = sales) -> pd.DataFrame:
     df['Transaction Date'] = pd.to_datetime(df['Transaction Date'])
+    df = df.sort_values(by='Transaction Date')
     df['Week'] = df['Transaction Date'].dt.isocalendar().week
     res = df.groupby(['Buyer Country', 'Week'])['Amount (Merchant Currency)'].sum().reset_index()
+    idx = pd.MultiIndex.from_product([res['Buyer Country'].unique(), range(22, 53)],
+                                     names=['Buyer Country', 'Week'])
+    res = res.set_index(['Buyer Country', 'Week']).reindex(idx, fill_value=0).reset_index()
+    res.columns = ['Country', 'Week', 'Amount(EUR)']
     return res
 
 
@@ -56,8 +63,6 @@ def calculate_weekly_average(df: pd.DataFrame = countries) -> pd.DataFrame:
 def converting_countrycode(df: pd.DataFrame) -> pd.DataFrame:
     if 'Country' in df.columns:
         df = df.rename(columns={'Country': 'country_code'})
-    elif 'Buyer Country' in df.columns:
-        df = df.rename(columns={'Buyer Country': 'country_code'})
     iso2_values = df['country_code']
     conv_df = coco.convert(names=iso2_values, to='ISO3', not_found=None)
     df['country_code'] = conv_df
@@ -69,78 +74,27 @@ country = calculate_weekly_average(countries)
 conv_sale = converting_countrycode(sale)
 conv_country = converting_countrycode(country)
 
-def plot_map(data1, data2):
+
+def plot_map_combined(data1, data2):
     fig1 = px.choropleth(data1, locations='country_code', color='Daily Average Rating', hover_name='country_code',
-                        projection='natural earth', animation_frame='Week',
-                        title='Country Rating')
-    fig1.write_html("plot_map.html")
-    fig1.show()
+                         projection='natural earth', animation_frame='Week',
+                         title='Country Rating per Week')
+    fig2 = px.choropleth(data2, locations='country_code', color='Amount(EUR)', hover_name='country_code',
+                         projection='natural earth', animation_frame='Week',
+                         title='Weekly Sales')
 
-plot_map(conv_country, conv_sale)
+    fig1.update_geos(showcountries=True)
+    fig2.update_geos(showcountries=True)
+
+    fig1.update_layout(height=600, width=800, title_text='Country Rating and Weekly Sales')
+    fig2.update_layout(height=600, width=800)
+
+    fig1.write_html("plot_map_combined.html")
+    fig2.write_html("plot_map_combined.html")
+    fig = fluidPage()
+    fig = go.Figure(fig1['data'] + fig2['data'], layout=row(fig1.layout, fig2))
+
+    fig.show()
 
 
-
-
-
-
-
-
-
-# def geodata_country(shapefile='ne_110m_admin_0_countries_lakes/ne_110m_admin_0_countries_lakes.shp'):
-#     gdf = gpd.read_file(shapefile)[['ADMIN', 'ADM0_A3', 'geometry']]
-#     gdf.columns = ['country', 'country_code', 'geometry']
-#     ratings_df = countries.rename(columns={'Country': 'country_code'})
-#     iso2_values = ratings_df['country_code']
-#     ratings_conv = coco.convert(names=iso2_values, to='ISO3', not_found=None)
-#     ratings_df['country_code'] = ratings_conv
-#     gdf = gdf.merge(ratings_df, on='country_code', how='left')
-#     gdf = gdf[gdf['country_code'] != 'ATA']
-#     return gdf
-#
-#
-# def get_geodatasource(gdf):
-#     import json
-#     json_data = json.dumps(json.loads(gdf.to_json()))
-#     return GeoJSONDataSource(geojson=json_data)
-#
-#
-# def plot_map(gdf, title=''):
-#     p = figure(title=title, height=500, width=950)
-#     hover = HoverTool(
-#         tooltips=[("Country", "@country"), ("Rating", "@{Total Average Rating}")],
-#         formatters={'Date': 'datetime'})
-#     p.add_tools(hover)
-#     reset_data_button = Button(label="Reset map", background='black', width=110)
-#     slider = Slider(start=1, end=24, value=24, step=1, title="Week", width=110)
-#     palette = ['#008000', '#FFC500', '#ff0000', '#c70000']
-#     color_mapper = LinearColorMapper(palette=palette, low=0, high=4, nan_color='#838383')
-#     tick_labels = {'4': '>4'}
-#     color_bar = ColorBar(color_mapper=color_mapper, label_standoff=6, width=500, height=20,
-#                          border_line_color=None, location=(0, 0), major_label_overrides=tick_labels,
-#                          title='Rating')
-#     geosource = get_geodatasource(gdf)
-#     p.patches('xs', 'ys', source=geosource, line_color='black', line_width=0.5, fill_alpha=1)
-#     p.background_fill_color = "beige"
-#     p.background_fill_alpha = 0.2
-#     callback = CustomJS(args=dict(source=geosource), code="""
-#         var data = source.data;
-#         var week = cb_obj.value;
-#         var indices = [];
-#         for (var i = 0; i < data['week'].length; i++) {
-#             if (data['week'][i] == week) {
-#                 indices.push(i);
-#             }
-#         }
-#         source.selected.indices = indices;
-#         source.change.emit();
-#     """)
-#
-#     slider.js_on_change('value', callback)
-#     from bokeh.layouts import column
-#     layout = column(p, slider)
-#
-#     output_file('world_map.html')
-#     show(layout)
-#
-#
-# plot_map(geodata_country(), title='Weekly Average Rating per Country')
+plot_map_combined(conv_country, conv_sale)
