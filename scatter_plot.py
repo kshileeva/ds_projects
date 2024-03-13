@@ -33,12 +33,12 @@ p = figure(width=900, height=600, x_axis_type="datetime", x_axis_label='Date', t
            title='Ratings vs Stability')
 p.background_fill_color = "#fafafa"
 
-crashes_renderer = p.scatter(dates, crashes, color='#de2d26', size=7)
+crashes_renderer = p.scatter(dates, crashes, color='#de2d26', size=7, legend_label='Crashes')
 p.yaxis.axis_label = "Crashes"
 p.yaxis.axis_label_text_color = "#de2d26"
 
 p.extra_y_ranges['foo'] = Range1d(-0.1, 5.2)
-rating_renderer = p.scatter(dates, rating, color='blue', size=6, y_range_name="foo")
+rating_renderer = p.scatter(dates, rating, color='blue', size=6, y_range_name="foo", legend_label='Rating')
 
 ax2 = LinearAxis(axis_label="Rating", y_range_name="foo", axis_label_text_color='blue')
 p.add_layout(ax2, 'right')
@@ -60,4 +60,6 @@ tooltips_rating = [
 hover_crashes = HoverTool(renderers=[crashes_renderer], tooltips=tooltips_crashes, formatters={'@x': 'datetime'})
 hover_rating = HoverTool(renderers=[rating_renderer], tooltips=tooltips_rating, formatters={'@x': 'datetime'})
 p.add_tools(hover_crashes, hover_rating)
+p.legend.location = 'bottom_right'
+p.legend.click_policy = "hide"
 show(p)
