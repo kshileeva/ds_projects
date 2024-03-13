@@ -145,7 +145,6 @@ def plot_map():
     layout = column(row(p1, p2), slider)
 
     output_file('world_map.html')
-    # show(layout)
-    return sale_geo, country_geo
+    show(layout)
 
-print(plot_map())
+plot_map()
