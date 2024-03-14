@@ -30,7 +30,7 @@ rating = merged_df['Daily Average Rating'].tolist()
 dates = merged_df['Date'].tolist()
 
 p = figure(width=900, height=600, x_axis_type="datetime", x_axis_label='Date', tools="pan,save,reset",
-           title='Ratings vs Stability')
+           title='Correlation between Daily Crashes and User Ratings')
 p.background_fill_color = "#fafafa"
 
 crashes_renderer = p.scatter(dates, crashes, color='#de2d26', size=7, legend_label='Crashes')

@@ -15,7 +15,7 @@ amounts = monthly_data['Amount'].tolist()
 volumes = monthly_data['Description'].tolist()
 p = figure(width=600,
            height=400,
-           title='Monthly Transaction',
+           title='Monthly Revenue and Transaction Volume Trends',
            x_axis_label='Month',
            y_axis_label='Transaction Amount'
            )

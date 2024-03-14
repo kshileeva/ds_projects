@@ -23,7 +23,7 @@ unlockcharactermanager = monthly_sku_amount['month'].tolist
 
 p = figure(width=550,
            height=600,
-           title='Monthly Transaction Analysis',
+           title='Transaction Amounts by SKU ID',
            x_axis_label='Month',
            y_axis_label='Transaction Amount')
 
