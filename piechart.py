@@ -1,6 +1,5 @@
 from math import pi
 from bokeh.io import output_file
-from bokeh.models import HoverTool
 from bokeh.plotting import figure, show
 from bokeh.palettes import Category20
 from bokeh.transform import cumsum
@@ -35,7 +34,7 @@ hover = HoverTool(
     tooltips=[("Country", "@{Buyer Country}"),
               ("Amount", "@Amount{1,11}")])
 
-c = figure(height=350, title="Percentage of Transaction Amounts by Country", toolbar_location=None,
+c = figure(height=350, title="Pie Chart", toolbar_location=None,
            tools=[hover], x_range=(-0.5, 1.0))
 
 
@@ -46,5 +45,3 @@ c.wedge(x=0, y=1, radius=0.4,
 c.axis.axis_label = None
 c.axis.visible = False
 c.grid.grid_line_color = None
-
-show(c)
