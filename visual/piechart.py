@@ -1,15 +1,16 @@
 from math import pi
 from bokeh.io import output_file
+from bokeh.models import HoverTool
 from bokeh.plotting import figure, show
 from bokeh.palettes import Category20
 from bokeh.transform import cumsum
 import pandas as pd
 
 # The figure will be rendered inline in my Jupyter Notebook
-output_file('analysis3.html', title="a3")
+output_file('../analysis3.html', title="a3")
 
 # read file into Dataframe
-file_path = 'combined_sales_file.csv'
+file_path = '../combined_sales_file.csv'
 df_table = pd.read_csv(file_path)
 
 # change the date form

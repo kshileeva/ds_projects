@@ -3,8 +3,8 @@ from bokeh.plotting import figure, show
 from bokeh.models import HoverTool
 import pandas as pd
 
-output_file('analysis2.html', title='a2')
-file_path = 'combined_sales_file.csv'
+output_file('../analysis2.html', title='a2')
+file_path = '../combined_sales_file.csv'
 df_table = pd.read_csv(file_path)
 monthly_sku_amount = pd.DataFrame(columns=['month', 'premium', 'unlockcharactermanager'])
 df = pd.DataFrame(df_table)

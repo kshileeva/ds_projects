@@ -2,8 +2,8 @@ from bokeh.io import output_file
 from bokeh.plotting import figure, show
 from bokeh.models import LinearAxis, Range1d, HoverTool
 import pandas as pd
-output_file('analysis1.html', title="a1")
-file_path = 'combined_sales_file.csv'
+output_file('../analysis1.html', title="a1")
+file_path = '../combined_sales_file.csv'
 df_table = pd.read_csv(file_path)
 df = pd.DataFrame(df_table)
 df['Transaction Date'] = pd.to_datetime(df['Transaction Date'], format='mixed', errors='coerce')
