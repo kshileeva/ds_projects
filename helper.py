@@ -1,13 +1,17 @@
 from cmath import pi
-
 from bokeh.io import output_file
 from bokeh.layouts import gridplot
 from bokeh.plotting import figure, save
 from bokeh.models import LinearAxis, Range1d, HoverTool, WheelZoomTool
 import pandas as pd
-from random import randint, random
 import os
-from numpy import cumsum
+from math import pi
+from bokeh.io import output_file
+from bokeh.plotting import figure, show
+from bokeh.palettes import Category20
+from bokeh.transform import cumsum
+import pandas as pd
+
 
 file_path = 'combined_sales_file.csv'
 df_table = pd.read_csv(file_path)
@@ -21,7 +25,7 @@ amounts = monthly_data['Amount'].tolist()
 volumes = monthly_data['Description'].tolist()
 l = figure(width=800,
            height=400,
-           title='Monthly Transaction',
+           title='Monthly Revenue and Transaction Volume Trends',
            x_axis_label='Month',
            y_axis_label='Transaction Amount'
            )
@@ -62,7 +66,7 @@ unlockcharactermanager = monthly_sku_amount['month'].tolist
 
 b = figure(width=550,
            height=600,
-           title='Monthly Transaction Analysis',
+           title='Transaction Amounts by SKU ID',
            x_axis_label='Month',
            y_axis_label='Transaction Amount')
 
@@ -112,7 +116,7 @@ rating = merged_df['Daily Average Rating'].tolist()
 dates = merged_df['Date'].tolist()
 
 s = figure(width=900, height=600, x_axis_type="datetime", x_axis_label='Date', tools="pan,save,reset",
-           title='Ratings vs Stability')
+           title='Correlation between Daily Crashes and User Ratings')
 s.background_fill_color = "#fafafa"
 
 crashes_renderer = s.scatter(dates, crashes, color='#de2d26', size=7, legend_label='Crashes')
@@ -144,6 +148,43 @@ hover_rating = HoverTool(renderers=[rating_renderer], tooltips=tooltips_rating, 
 s.add_tools(hover_crashes, hover_rating)
 s.legend.location = 'bottom_right'
 s.legend.click_policy = "hide"
-grid = gridplot([[l], [b, s]])
-output_file('index.html')
-save(grid)
+
+
+file_path_c = 'combined_sales_file.csv'
+df_table_c = pd.read_csv(file_path_c)
+
+df_c = pd.DataFrame(df_table_c)
+
+country_transaction_c = df_c.groupby('Buyer Country')['Amount'].sum().reset_index()
+country_transaction_sorted_c = country_transaction_c.sort_values(by='Amount', ascending=False)
+
+top_9 = country_transaction_sorted_c.head(9)
+others = pd.DataFrame({'Buyer Country':['Others'],
+                       'Amount': [country_transaction_sorted_c['Amount'][9:].sum()]
+                           })
+result_dataframe_c = pd.concat([top_9, others])
+
+data_c = pd.DataFrame(result_dataframe_c).reset_index(drop=True)
+data_c['angle'] = data_c['Amount']/data_c['Amount'].sum() * 2*pi
+data_c['color'] = Category20[len(result_dataframe_c)]
+
+hover = HoverTool(
+    tooltips=[("Country", "@{Buyer Country}"),
+              ("Amount", "@Amount{1,11}")])
+
+c = figure(height=350, title="Percentage of Transaction Amounts by Country", toolbar_location=None,
+           tools=[hover], x_range=(-0.5, 1.0))
+
+
+c.wedge(x=0, y=1, radius=0.4,
+        start_angle=cumsum('angle', include_zero=True), end_angle=cumsum('angle'),
+        line_color="white", fill_color='color', legend_field='Buyer Country', source=data_c)
+
+c.axis.axis_label = None
+c.axis.visible = False
+c.grid.grid_line_color = None
+
+
+all_grid = gridplot([[l, c], [b, s]])
+output_file('all_plots.html')
+save(all_grid)
