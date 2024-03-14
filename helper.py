@@ -64,7 +64,7 @@ month = monthly_sku_amount['month'].tolist
 premium = monthly_sku_amount['premium'].tolist
 unlockcharactermanager = monthly_sku_amount['month'].tolist
 
-b = figure(width=550,
+b = figure(width=600,
            height=600,
            title='Transaction Amounts by SKU ID',
            x_axis_label='Month',
@@ -115,7 +115,7 @@ crashes = merged_df['Crashes'].tolist()
 rating = merged_df['Daily Average Rating'].tolist()
 dates = merged_df['Date'].tolist()
 
-s = figure(width=900, height=600, x_axis_type="datetime", x_axis_label='Date', tools="pan,save,reset",
+s = figure(width=800, height=600, x_axis_type="datetime", x_axis_label='Date', tools="pan,save,reset",
            title='Correlation between Daily Crashes and User Ratings')
 s.background_fill_color = "#fafafa"
 
@@ -172,7 +172,7 @@ hover = HoverTool(
     tooltips=[("Country", "@{Buyer Country}"),
               ("Amount", "@Amount{1,11}")])
 
-c = figure(height=350, title="Percentage of Transaction Amounts by Country", toolbar_location=None,
+c = figure(height=400, title="Percentage of Transaction Amounts by Country", toolbar_location=None,
            tools=[hover], x_range=(-0.5, 1.0))
 
 
@@ -185,6 +185,6 @@ c.axis.visible = False
 c.grid.grid_line_color = None
 
 
-all_grid = gridplot([[l, c], [b, s]])
+all_grid = gridplot([[l, c], [s, b]])
 output_file('all_plots.html')
 save(all_grid)
