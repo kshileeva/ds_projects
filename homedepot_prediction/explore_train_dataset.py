@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
-df_train = pd.read_csv('train.csv', encoding='ISO-8859-1')
-df_attr = pd.read_csv('attributes.csv', encoding='ISO-8859-1')
+df_train = pd.read_csv('depot_data/train.csv', encoding='ISO-8859-1')
+df_attr = pd.read_csv('depot_data/attributes.csv', encoding='ISO-8859-1')
 
 
 def total_num_pairs(df=df_train) -> str:
@@ -50,13 +50,15 @@ def boxplot(df=df_train):
     plt.xlabel('Relevance')
     plt.ylabel('Values')
     plt.grid(True)
-    # plt.show()
+    plt.show()
 
 
 def top_brand_names(df=df_attr) -> str:
     name_cnt = df['name'].value_counts()
     top_names = name_cnt.head(5)
     return f'Top 5 occurring brand names:\n{top_names}'
+
+
 print(total_num_pairs())
 print(unique_products())
 print(top_2_occur_product())
