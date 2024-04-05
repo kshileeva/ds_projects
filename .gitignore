@@ -5,3 +5,8 @@ LICENSE
 assignment1_data
 ne_110m_admin_0_countries_lakes
 .gitignore
+attributes.csv
+product_description.csv
+sample_submissition.csv
+test.csv
+train.csv
