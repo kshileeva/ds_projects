@@ -1,4 +1,4 @@
-# code by Yao-Jen Chang
+# https://www.kaggle.com/code/wenxuanchen/sklearn-random-forest/script
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, BaggingRegressor
