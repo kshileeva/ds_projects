@@ -1,7 +1,7 @@
 import math
 import matplotlib.pyplot as plt
 import pandas as pd
-
+import numpy as np
 
 df_train = pd.read_csv('depot_data/train.csv', encoding='ISO-8859-1')
 df_attr = pd.read_csv('depot_data/attributes.csv', encoding='ISO-8859-1')
@@ -44,12 +44,13 @@ def relevance_med(df=df_train) -> str:
 
 def boxplot(df=df_train):
     relevance_values = df['relevance'].tolist()
-    plt.figure(figsize=(8, 6))
+    median_value = np.median(relevance_values)
+    plt.figure(figsize=(4, 3))
     plt.boxplot(relevance_values, medianprops=dict(color='red', linewidth=2))
     plt.title('Distribution of Relevance Values')
-    plt.xlabel('Relevance')
-    plt.ylabel('Values')
+    plt.ylabel('Relevance Score')
     plt.grid(True)
+    plt.text(1, median_value, f'Median = {median_value:.2f}', ha='left', va='bottom', color='red')
     plt.show()
 
 

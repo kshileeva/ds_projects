@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, BaggingRegressor
 from nltk.stem.snowball import SnowballStemmer
-
+import time
 stemmer = SnowballStemmer('english')
 
 df_train = pd.read_csv('depot_data/train.csv', encoding="ISO-8859-1")
