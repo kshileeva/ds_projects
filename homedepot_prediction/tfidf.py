@@ -12,19 +12,15 @@ df_train = pd.read_csv('depot_data/train.csv', encoding="ISO-8859-1")
 df_test = pd.read_csv('depot_data/test.csv', encoding="ISO-8859-1")
 df_pro_desc = pd.read_csv('depot_data/product_descriptions.csv')
 
-# Initialize stemmer
 stemmer = SnowballStemmer('english')
 
-# Function to perform stemming
 def str_stemmer(s):
     return " ".join([stemmer.stem(word) for word in s.lower().split()])
 
-# Apply stemming to text columns
 df_train['search_term'] = df_train['search_term'].map(str_stemmer)
 df_train['product_title'] = df_train['product_title'].map(str_stemmer)
 df_pro_desc['product_description'] = df_pro_desc['product_description'].map(str_stemmer)
 
-# Merge datasets
 df_all = pd.concat([df_train, df_test], axis=0, ignore_index=True)
 df_all = pd.merge(df_all, df_pro_desc, how='left', on='product_uid')
 
@@ -51,7 +47,6 @@ clf.fit(X_train_split, y_train_split)
 
 y_pred_split = clf.predict(X_test_split)
 
-# Calculate RMSE
 rmse = np.sqrt(mean_squared_error(y_test_split, y_pred_split))
 
 end = time.time()
