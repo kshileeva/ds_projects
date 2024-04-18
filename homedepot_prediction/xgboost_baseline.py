@@ -49,7 +49,7 @@ y_train = df_train['relevance'].values
 X_train = df_train.drop(['id', 'relevance'], axis=1).values
 X_test = df_test.drop(['id', 'relevance'], axis=1).values
 X_train_xgb, X_test_xgb, y_train_xgb, y_test_xgb = train_test_split(X_train, y_train, test_size=0.2, random_state=0)
-xg_reg = xgb.XGBRegressor(objective='reg:squarederror', n_estimators=25, max_depth=4, learning_rate=0.1, random_state=0)
+xg_reg = xgb.XGBRegressor(objective='reg:squarederror', n_estimators=25, max_depth=5, learning_rate=0.1, random_state=0)
 
 xg_reg.fit(X_train_xgb, y_train_xgb)
 y_pred_xgb = xg_reg.predict(X_test_xgb)
