@@ -105,12 +105,12 @@ weights = xg_reg.feature_importances_
 feature_names = X_train_xgb_df.columns
 feature_importance_df = pd.DataFrame({'Feature': feature_names, 'Importance': weights})
 feature_importance_df = feature_importance_df.sort_values(by='Importance', ascending=False)
-top_features = feature_importance_df.head(5)
+top_features = feature_importance_df.head()
 
 y_pred_xgb = xg_reg.predict(X_test_xgb)
 rmse_xgb = np.sqrt(mean_squared_error(y_test_xgb, y_pred_xgb))
 
 end = time.time()
-print(f'top 5 features: {top_features}')
+print(f'top features: {top_features}')
 print(f'RMSE: {rmse_xgb}')
 print(f'Time: {(end - start)} sec')
